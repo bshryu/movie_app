@@ -1,29 +1,54 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import './App.css';
 import Movie from './Movie';
 
-const movieTitles = [
-  "Matrix",
-  "Full Metal Jacket",
-  "Oldboy",
-  "Star Wars"
-]
-
-const movieImages = [
-  "https://upload.wikimedia.org/wikipedia/en/thumb/c/c1/The_Matrix_Poster.jpg/220px-The_Matrix_Poster.jpg",
-  "https://images-na.ssl-images-amazon.com/images/M/MV5BNzc2ZThkOGItZGY5YS00MDYwLTkyOTAtNDRmZWIwMGRhYTc0L2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UY1200_CR79,0,630,1200_AL_.jpg",
-  "https://upload.wikimedia.org/wikipedia/en/b/bb/Oldboy_2013_film_poster.jpg",
-  "https://images-na.ssl-images-amazon.com/images/M/MV5BMjQ1MzcxNjg4N15BMl5BanBnXkFtZTgwNzgwMjY4MzI@._V1_UX182_CR0,0,182,268_AL_.jpg"
-]
 
 class App extends Component {
+
+  // Render : componentWillMount() -> render() -> componentDidMount()
+  // Update componentWillReceiveProps() -> shouldComponentUpdate() == true -> componentWillUpdate() 
+  //    -> render() -> componentDidUpdate()
+
+  state = {
+
+  }
+
+  componentDidMount() {
+    this._getMovies()
+  }
+
+  _getMovies = async () => {
+    const movies = await this._callApi()
+    this.setState({
+      movies
+    })
+  }
+
+  _callApi = () => {
+    return fetch("https://yts.am/api/v2/list_movies.json?sort_by=download_count")
+    .then(potato => potato.json())
+    .then(json => json.data.movies)
+    .catch(err => console.log(err));
+  }
+
+  _renderMovies = () => {
+    const movies = this.state.movies.map(movie => {
+      return <Movie 
+        title={movie.title_english} 
+        poster={movie.medium_cover_image} 
+        key={movie.id} 
+        genres={movie.genres}
+        synopsis={movie.synopsis}
+      />;
+    })
+    return movies
+  }
+
   render() {
+    const {movies} = this.state;
     return (
-      <div className="App">
-        <Movie title={movieTitles[0]} poster={movieImages[0]} />
-        <Movie title={movieTitles[1]} poster={movieImages[1]} />
-        <Movie title={movieTitles[2]} poster={movieImages[2]} />
-        <Movie title={movieTitles[3]} poster={movieImages[3]} />
+      <div className={movies ? "App" : "App--loading"}>
+        {movies ? this._renderMovies() : 'Loading'} 
       </div>
     )
   }
